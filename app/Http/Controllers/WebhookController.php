@@ -63,16 +63,21 @@ class WebhookController extends Controller
             return ResponseHandler::error($validator->errors()->first());
         }
 
-        $notif = ResolveNotif::create(['customer' => $request->customer, 'resolved_by' => $request->resolved, 'service' => $request->service]);
-
-        $room = Room::where('room_id', $request->service['room_id'])->first();
-        $room->is_new_session = false;
-        $room->is_resolved = true;
-        $room->save();
-
-        Log::info('MarkAsResolved API: Receive resolve notification.', ['params' => $request->all()]);
+        $notif = ResolveNotif::create(['customer' => json_encode($request->customer), 'resolved_by' => json_encode($request->resolved_by), 'service' => json_encode($request->service)]);
 
         AssignAgent::dispatch();
+
+        $room = Room::where('room_id', $request->service['room_id'])->first();
+
+        if (!$room) {
+            return ResponseHandler::error('Unable to find room', 404);
+        } else {
+            $room->is_new_session = false;
+            $room->is_resolved = true;
+            $room->save();
+
+            Log::info('MarkAsResolved API: Receive resolve notification.', ['params' => $request->all()]);
+        }
 
         return ResponseHandler::success('Room marked as resolved');
     }
