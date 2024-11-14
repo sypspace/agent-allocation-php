@@ -56,9 +56,17 @@ Contoh Payload:
 
 ```json
 {
-    "room_id": "12345",
-    "message": "Hello, I need help!",
-    "customer_id": "67890"
+    "app_id": "xrmcf-2s1ciqkustajhlv",
+    "avatar_url": "https://omnichannel.qiscus.com/img/ic_qiscus_client.png",
+    "candidate_agent": null,
+    "email": "cust1@example.com",
+    "extras": "{\"additional_extras\":{\"timezone_offset\":7},\"notes\":null,\"timezone_offset\":null,\"user_properties\":[],\"user_properties_migrated\":true}",
+    "is_new_session": true,
+    "is_resolved": false,
+    "latest_service": null,
+    "name": "cust1",
+    "room_id": "273683234",
+    "source": "qiscus"
 }
 ```
 
@@ -66,8 +74,9 @@ Respons:
 
 ```json
 {
-    "status": "success",
-    "agent_id": "agent_01"
+    "status": 200,
+    "message": "Successfully received.",
+    "data": null
 }
 ```
 
@@ -80,8 +89,28 @@ Contoh Payload:
 
 ```json
 {
-    "room_id": "12345",
-    "agent_id": "agent_01"
+    "customer": {
+        "additional_info": [],
+        "avatar": "https://omnichannel.qiscus.com/img/ic_qiscus_client.png",
+        "name": "cust#2",
+        "user_id": "hello@world.com"
+    },
+    "resolved_by": {
+        "email": "qiscus_166a3_qticketing.demo1@gmail.com",
+        "id": 162787,
+        "is_available": true,
+        "name": "QTicketing Demo 1",
+        "type": "admin"
+    },
+    "service": {
+        "first_comment_id": "2487134935",
+        "id": 115830865,
+        "is_resolved": true,
+        "last_comment_id": "2488202680",
+        "notes": "selesai.",
+        "room_id": "274083256",
+        "source": "qiscus"
+    }
 }
 ```
 
@@ -89,8 +118,9 @@ Respons:
 
 ```json
 {
-    "status": "success",
-    "message": "Room marked as resolved."
+    "status": 200,
+    "message": "Room marked as resolved.",
+    "data": null
 }
 ```
 
@@ -108,12 +138,27 @@ Contoh Payload (POST):
 }
 ```
 
-Respons:
+Respons (POST):
 
 ```json
 {
-    "status": "success",
-    "max_customers": 5
+    "status": 200,
+    "message": "Successfully updated",
+    "data": {
+        "max_customers": 5
+    }
+}
+```
+
+Respons (GET):
+
+```json
+{
+    "status": 200,
+    "message": "Success",
+    "data": {
+        "max_customers": 20
+    }
 }
 ```
 
@@ -127,7 +172,8 @@ Contoh Payload:
 
 ```json
 {
-    "url": "https://yourdomain.com/api/v1/webhook/mark_as_resolved"
+    "endpoint": "https://yourdomain.com/api/v1/webhook/mark_as_resolved",
+    "enable": true
 }
 ```
 
@@ -135,8 +181,12 @@ Respons:
 
 ```json
 {
-    "status": "success",
-    "url": "https://yourdomain.com/api/v1/webhook/mark_as_resolved"
+    "status": 200,
+    "message": "Successfully updated",
+    "data": {
+        "mark_as_resolved_webhook_url": "https://yourdomain.com/api/v1/webhook/mark_as_resolved",
+        "is_allocate_agent_webhook_enabled": true
+    }
 }
 ```
 
