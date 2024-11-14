@@ -13,5 +13,5 @@ Route::prefix('/v1')->group(function () {
 
     Route::get('settings/max_customers', [SettingController::class, 'getMaxCustomers'])->name('settings.maxCustomers.get');
     Route::post('settings/max_customers', [SettingController::class, 'updateMaxCustomers'])->name('settings.maxCustomers.update');
-    Route::post('settings/set_mark_as_resolve', [SettingController::class, 'setMarkAsResolvedWebhook'])->name('settings.setMarkAsResolvedWebhook.update');
+    Route::post('settings/set_mark_as_resolved', [SettingController::class, 'setMarkAsResolved'])->name('settings.setMarkAsResolved.update');
 });

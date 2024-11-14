@@ -14,11 +14,12 @@ class ResponseHandler
      * @param int $statusCode
      * @return JsonResponse
      */
-    public static function success($data = null, int $statusCode = 200): JsonResponse
+    public static function success($message, $data = null, int $statusCode = 200): JsonResponse
     {
         return response()->json([
             'status' => $statusCode,
-            'data' => $data,
+            'message' => $message,
+            'data' => $data
         ], $statusCode);
     }
 
@@ -29,11 +30,12 @@ class ResponseHandler
      * @param int $statusCode
      * @return JsonResponse
      */
-    public static function error(string $errors = 'An error occurred', int $statusCode = 400): JsonResponse
+    public static function error(string $errors = 'An error occurred', int $statusCode = 400, $data = null): JsonResponse
     {
         return response()->json([
             'status' => $statusCode,
             'errors' => $errors,
+            'data' => $data
         ], $statusCode);
     }
 

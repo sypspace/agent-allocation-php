@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ClientException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -29,11 +30,11 @@ class QiscusService
             $multipart = [
                 [
                     'name' => 'webhook_url',
-                    'value' => $endpoint
+                    'contents' => $endpoint
                 ],
                 [
                     'name' => 'is_webhook_enabled',
-                    'value' => $enable
+                    'contents' => $enable
                 ]
             ];
 
@@ -46,7 +47,7 @@ class QiscusService
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
-        } catch (\Exception $e) {
+        } catch (ClientException $e) {
             Log::error('setMarkAsResolvedWebhook Error: ' . $e->getMessage(), ['params' => $multipart]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
@@ -66,13 +67,13 @@ class QiscusService
                 'headers' => [
                     'Authorization' => "{$this->token}",
                     'Qiscus-App-Id' => "{$this->appId}",
-                    'Content-Type'  => "application/json"
+                    // 'Content-Type'  => "application/json"
                 ],
                 'query' => $query
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
-        } catch (\Exception $e) {
+        } catch (ClientException $e) {
             Log::error('getAgentByIds Error: ' . $e->getMessage(), ['params' => $query]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
@@ -90,7 +91,7 @@ class QiscusService
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
-        } catch (\Exception $e) {
+        } catch (ClientException $e) {
             Log::error('getAgentByIds Error: ' . $e->getMessage(), ['params' => ['room_id' => $id]]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
@@ -116,7 +117,7 @@ class QiscusService
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
-        } catch (\Exception $e) {
+        } catch (ClientException $e) {
             Log::error('assignAgent Error: ' . $e->getMessage(), ['params' => $form_params]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
@@ -142,7 +143,7 @@ class QiscusService
             ]);
 
             return json_decode($response->getBody()->getContents(), true);
-        } catch (\Exception $e) {
+        } catch (ClientException $e) {
             Log::error('getAvailableAgents Error: ' . $e->getMessage(), ['params' => $query]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
