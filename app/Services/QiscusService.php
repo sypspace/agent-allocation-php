@@ -4,6 +4,7 @@ namespace App\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -49,6 +50,68 @@ class QiscusService
             return json_decode($response->getBody()->getContents(), true);
         } catch (ClientException $e) {
             Log::error('setMarkAsResolvedWebhook Error: ' . $e->getMessage(), ['params' => $multipart]);
+            return ResponseHandler::error($e->getMessage(), $e->getCode());
+        }
+    }
+
+    public function getChannels(): Collection
+    {
+        try {
+            $response = $this->client->get('/api/v2/channels', [
+                'headers' => [
+                    'Authorization' => "{$this->token}",
+                    'Qiscus-App-Id' => "{$this->appId}",
+                    'Content-Type'  => "application/json"
+                ],
+            ]);
+
+            $response = json_decode($response->getBody()->getContents(), true);
+            $channels = $response['data'];
+
+            $formated = [];
+            foreach ($channels as $key => $channel) {
+                $formated[] = [
+                    'source' => str_replace('_channels', '', $key),
+                    'channel_id' => $channel
+                ];
+            }
+
+            return collect($formated);
+        } catch (ClientException $e) {
+            Log::error('getChannels Error: ' . $e->getMessage(), ['params' => []]);
+            return ResponseHandler::error($e->getMessage(), $e->getCode());
+        }
+    }
+
+    public function getCustomerRooms($sort = 'asc'): Collection
+    {
+        $channels = $this->getChannels();
+
+        $body = [
+            'channels' => $channels->toArray(),
+            "serve_status" => "unserved",
+            "order" => $sort
+        ];
+
+        try {
+            $response = $this->client->get('/api/v2/channels', [
+                'headers' => [
+                    'Authorization' => "{$this->token}",
+                    'Qiscus-App-Id' => "{$this->appId}",
+                    'Content-Type'  => "application/json"
+                ],
+                'body' => json_encode($body)
+            ]);
+
+            $response = json_decode($response->getBody()->getContents(), true);
+
+            // Sepertinya sorting dari API tidak bekerja, jadi lakukan sort manual
+            $rooms = collect($response['data']['customer_rooms']);
+            $sorted = $rooms->sortBy([['last_customer_timestamp', 'asc']], $sort);
+
+            return $sorted;
+        } catch (ClientException $e) {
+            Log::error('getChannels Error: ' . $e->getMessage(), ['params' => []]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
     }

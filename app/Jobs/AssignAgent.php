@@ -40,19 +40,19 @@ class AssignAgent implements ShouldQueue
         $qiscus = new QiscusService();
 
         // Ambil antrian pertama masuk
-        $room = Room::UnResolved()->OrderByCreatedDate()->first();
-
-        $qRoom = $qiscus->getRoomById($room->room_id);
+        $rooms = $qiscus->getCustomerRooms();
+        $room = $rooms->first();
 
         // Cek room sudah ada agent yang handle atau belum
-        if ($qRoom['data']['customer_room']['is_waiting'] === true) {
+        if ($room['is_waiting'] === true) {
 
             // Cari agent yang free
-            $availAgents = $qiscus->getAvailableAgents($room->room_id, false, $this->agent_count);
+            $availAgents = $qiscus->getAvailableAgents($room['room_id'], false, $this->agent_count);
+            $availAgents = $availAgents['data'];
 
-            if ($availAgents->data) {
+            if ($availAgents) {
 
-                $agents = $availAgents->data->agents;
+                $agents = $availAgents['agents'];
 
                 if (sizeof($agents) > 0) {
                     foreach ($agents as $agent) {
@@ -60,19 +60,37 @@ class AssignAgent implements ShouldQueue
                         if ($agent->current_customer_count < env('QISCUS_MAX_CUSTOMER')) {
 
                             // Call API untuk assign room ke agent
-                            $assignedAgent = $qiscus->assignAgent($room->room_id, $agent->id);
+                            $assignedAgent = $qiscus->assignAgent($room['room_id'], $agent['id']);
 
-                            Log::info("AssignAgent Job: " . $assignedAgent->added_agent->name . " assigned to room " . $room->room_id, ['params' => ['id' => $room->room_id]]);
+                            Log::info(
+                                "AssignAgent Job: " . $assignedAgent['added_agent']['name'] . " assigned to room " . $room['room_id'],
+                                [
+                                    'params' => [
+                                        'room_id' => $room['room_id'],
+                                        'agent' => $agent
+                                    ]
+                                ]
+                            );
                         }
                     }
                 } else {
-                    // Skip. Tidak ada agent yang Online/Ready untuk bisa handle customer
-                    Log::warning("AssignAgent Job: Skiped! Unable to found free agent for room " . $room->room_id, ['params' => ['id' => $room->room_id]]);
+                    // Skip. Tidak ada agent yang Online/Ready untuk bisa melayani customer
+                    Log::warning(
+                        "AssignAgent Job: Skiped! Unable to found free agent.",
+                        [
+                            'params' => ['id' => $room->room_id]
+                        ]
+                    );
                 }
             }
         } else {
             // Skip. Room sudah di-handle seorang agent
-            Log::warning("AssignAgent Job: Skiped! Room " . $room->room_id . " has been handled.", ['params' => ['id' => $room->room_id]]);
+            Log::warning(
+                "AssignAgent Job: Skiped! Room " . $room->room_id . " has been served.",
+                [
+                    'params' => ['room_id' => $room->room_id]
+                ]
+            );
         }
     }
 }
