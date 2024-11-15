@@ -49,7 +49,43 @@ class AssignAgent implements ShouldQueue
         // Cek room sudah ada agent yang handle atau belum. Klo masih muncul, kirim peringatan.
         if ($room['is_waiting'] === true && $room['is_resolved'] === false) {
 
-            $this->findFreeAgent($room);
+            // Cari agent yang free
+            $availAgents = $this->qiscus->getAvailableAgents($room['room_id'], false, $this->agent_count);
+            $availAgents = $availAgents['data'];
+
+            if ($availAgents) {
+
+                $agents = $availAgents['agents'];
+
+                if (sizeof($agents) > 0) {
+                    foreach ($agents as $agent) {
+                        // Jika agent jumlah customer yg sedang dihandle kurang dari limit, assign room ke agent ini
+                        if ($agent->current_customer_count < env('QISCUS_MAX_CUSTOMER')) {
+
+                            // Call API untuk assign room ke agent
+                            $assignedAgent = $this->qiscus->assignAgent($room['room_id'], $agent['id']);
+
+                            Log::info(
+                                "AssignAgent Job: " . $assignedAgent['added_agent']['name'] . " assigned to room " . $room['room_id'],
+                                [
+                                    'params' => [
+                                        'room_id' => $room['room_id'],
+                                        'agent' => $agent
+                                    ]
+                                ]
+                            );
+                        }
+                    }
+                } else {
+                    // Skip. Tidak ada agent yang Online/Ready untuk bisa melayani customer
+                    Log::warning(
+                        "AssignAgent Job: Skiped! Unable to found free agent.",
+                        [
+                            'params' => ['id' => $room['room_id']]
+                        ]
+                    );
+                }
+            }
         } else {
             // Skip. Room sudah dilayanai seorang agent
             Log::warning(
@@ -58,53 +94,6 @@ class AssignAgent implements ShouldQueue
                     'params' => ['room_id' => $room['room_id']]
                 ]
             );
-        }
-    }
-
-    /**
-     * Cari agent yang free
-     *
-     * @param Array $room 
-     * @return void
-     **/
-    public function findFreeAgent($room)
-    {
-        // Cari agent yang free
-        $availAgents = $this->qiscus->getAvailableAgents($room['room_id'], false, $this->agent_count);
-        $availAgents = $availAgents['data'];
-
-        if ($availAgents) {
-
-            $agents = $availAgents['agents'];
-
-            if (sizeof($agents) > 0) {
-                foreach ($agents as $agent) {
-                    // Jika agent jumlah customer yg sedang dihandle kurang dari limit, assign room ke agent ini
-                    if ($agent->current_customer_count < env('QISCUS_MAX_CUSTOMER')) {
-
-                        // Call API untuk assign room ke agent
-                        $assignedAgent = $this->qiscus->assignAgent($room['room_id'], $agent['id']);
-
-                        Log::info(
-                            "AssignAgent Job: " . $assignedAgent['added_agent']['name'] . " assigned to room " . $room['room_id'],
-                            [
-                                'params' => [
-                                    'room_id' => $room['room_id'],
-                                    'agent' => $agent
-                                ]
-                            ]
-                        );
-                    }
-                }
-            } else {
-                // Skip. Tidak ada agent yang Online/Ready untuk bisa melayani customer
-                Log::warning(
-                    "AssignAgent Job: Skiped! Unable to found free agent.",
-                    [
-                        'params' => ['id' => $room['room_id']]
-                    ]
-                );
-            }
         }
     }
 }
