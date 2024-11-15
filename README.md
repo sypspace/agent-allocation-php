@@ -41,6 +41,11 @@ Agent Allocation PHP adalah sebuah service backend yang digunakan untuk menentuk
     QISCUS_PASSWORD=
     LOG_SLACK_WEBHOOK_URL=
     ```
+4. Jalankan migrasi dan seeder database
+    ```bash
+    php artisan migrate
+    php artisan db:seed
+    ```
 
 # Endpoint API
 
@@ -194,7 +199,7 @@ Respons:
 
 -   **Max Customers:** Pengaturan jumlah maksimum customer per agen dapat diubah melalui endpoint `/api/v1/settings/max_customers` atau dengan mengedit file konfigurasi di .env.
 -   **URL Mark as Resolved:** URL yang digunakan untuk notifikasi mark as resolved dapat diubah melalui endpoint `/api/v1/settings/set_mark_as_resolved`.
--   **Supervisor** Setup Supervisor untuk kelola antrian Job.
+-   **Supervisor** Install dan konfigurasi Supervisor untuk kelola antrian Job.
 
 # Kontribusi
 
