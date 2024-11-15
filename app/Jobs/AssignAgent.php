@@ -39,9 +39,11 @@ class AssignAgent implements ShouldQueue
     {
         $qiscus = new QiscusService();
 
-        // Ambil antrian pertama masuk
+        // Queue Rule FIFO: 
+        // Karena list customer rooms urutannya "descending" (tidak bisa diubah: filter tidak berfungsi). 
+        // So, ambil room yg ada di akhir
         $rooms = $qiscus->getCustomerRooms();
-        $room = $rooms->first();
+        $room = $rooms->last();
 
         // Cek room sudah ada agent yang handle atau belum
         if ($room['is_waiting'] === true) {

@@ -83,18 +83,17 @@ class QiscusService
         }
     }
 
-    public function getCustomerRooms($sort = 'asc'): Collection
+    public function getCustomerRooms()
     {
         $channels = $this->getChannels();
 
         $body = [
             'channels' => $channels->toArray(),
-            "serve_status" => "unserved",
-            "order" => $sort
+            "serve_status" => "unserved"
         ];
 
         try {
-            $response = $this->client->get('/api/v2/channels', [
+            $response = $this->client->get('/api/v2/customer_rooms', [
                 'headers' => [
                     'Authorization' => "{$this->token}",
                     'Qiscus-App-Id' => "{$this->appId}",
@@ -105,13 +104,9 @@ class QiscusService
 
             $response = json_decode($response->getBody()->getContents(), true);
 
-            // Sepertinya sorting dari API tidak bekerja, jadi lakukan sort manual
-            $rooms = collect($response['data']['customer_rooms']);
-            $sorted = $rooms->sortBy([['last_customer_timestamp', 'asc']], $sort);
-
-            return $sorted;
+            return collect($response['data']['customer_rooms']);
         } catch (ClientException $e) {
-            Log::error('getChannels Error: ' . $e->getMessage(), ['params' => []]);
+            Log::error('getChannels Error: ' . $e->getMessage(), ['params' => $body]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
     }
