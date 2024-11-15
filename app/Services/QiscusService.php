@@ -31,6 +31,10 @@ class QiscusService
     public function setMarkAsResolvedWebhook($endpoint, $enable = true)
     {
         try {
+            $headers = [
+                'Authorization' => "{$this->token}",
+            ];
+
             $multipart = [
                 [
                     'name' => 'webhook_url',
@@ -40,20 +44,6 @@ class QiscusService
                     'name' => 'is_webhook_enabled',
                     'contents' => ($enable) ? 'true' : 'false'
                 ]
-            ];
-
-            $response = $this->client->post('/api/v1/app/webhook/mark_as_resolved', [
-                'headers' => [
-                    'Authorization' => "{$this->token}",
-                    'Qiscus-App-Id' => "{$this->appId}"
-                ],
-                'multipart' => $multipart
-            ]);
-
-            return json_decode($response->getBody()->getContents(), true);
-
-            $headers = [
-                'Authorization' => "{$this->token}",
             ];
 
             $response = Http::qiscus()
@@ -67,7 +57,7 @@ class QiscusService
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
         } catch (RequestException $e) {
-            Log::error('getAgentByIds Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => $multipart]);
+            Log::error('setMarkAsResolvedWebhook Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => $multipart]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
     }
@@ -104,7 +94,7 @@ class QiscusService
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
         } catch (RequestException $e) {
-            Log::error('getAvailableAgents Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => []]);
+            Log::error('getChannels Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => []]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
     }
@@ -144,7 +134,7 @@ class QiscusService
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
         } catch (RequestException $e) {
-            Log::error('getAvailableAgents Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => $body]);
+            Log::error('getCustomerRooms Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => $body]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
     }
@@ -209,14 +199,13 @@ class QiscusService
     {
         try {
             $headers = [
-                'Qiscus-Secret-Key' => "{$this->secret}",
-                'Content-Type'  => "application/x-www-form-urlencoded"
+                'Qiscus-Secret-Key' => "{$this->secret}"
             ];
 
             $form_params = [
                 'room_id' => $room_id,
                 'agent_id' => $agent_id,
-                'replace_latest_agent' => $replace_latest_agent,
+                'replace_latest_agent' => ($replace_latest_agent) ? 'true' : 'false',
                 'max_agent' => $max_agent
             ];
 
