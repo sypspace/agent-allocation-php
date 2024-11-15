@@ -215,7 +215,7 @@ class QiscusService
                 ->post("/api/v1/admin/service/assign_agent", $form_params);
 
             if ($response->successful()) {
-                return $response->json();
+                return $response->json('data');
             }
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
