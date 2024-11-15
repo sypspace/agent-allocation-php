@@ -26,6 +26,7 @@ class WebhookController extends Controller
             return ResponseHandler::error($validator->errors()->first());
         }
 
+        // Jika room tidak ditemukan, create a new queue otherwise update existing
         $app_id         = $request->app_id;
         $name           = $request->name;
         $email          = $request->email;
@@ -34,11 +35,10 @@ class WebhookController extends Controller
         $source         = $request->source;
         $is_new_session = $request->is_new_session;
         $is_resolved    = $request->is_resolved;
-        $latest_service = $request->latest_service;
+        $latest_service = json_encode($request->latest_service);
         $extras         = $request->extras;
-        $candidate_agent = $request->candidate_agent;
+        $candidate_agent = json_encode($request->candidate_agent);
 
-        // Jika room tidak ditemukan, create a new queue otherwise update existing
         $room = Room::upsert(
             [compact('app_id', 'name', 'email', 'avatar_url', 'room_id', 'source', 'is_new_session', 'is_resolved', 'latest_service', 'extras', 'candidate_agent')],
             ['room_id'],
