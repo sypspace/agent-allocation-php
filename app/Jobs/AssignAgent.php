@@ -62,7 +62,7 @@ class AssignAgent implements ShouldQueue
                 if (sizeof($agents) > 0) {
                     foreach ($agents as $agent) {
                         // Jika agent jumlah customer yg sedang dihandle kurang dari limit, assign room ke agent ini
-                        if ($agent->current_customer_count < env('QISCUS_MAX_CUSTOMER')) {
+                        if ($agent['current_customer_count'] < env('QISCUS_MAX_CUSTOMER')) {
 
                             // Call API untuk assign room ke agent
                             $assignedAgent = $this->qiscus->assignAgent($room['room_id'], $agent['id']);
