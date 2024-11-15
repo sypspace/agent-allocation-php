@@ -2,25 +2,19 @@
 
 namespace App\Services;
 
-use GuzzleHttp\Client;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Session;
 
 class QiscusService
 {
-    protected $baseUrl;
-    protected $client;
     protected $appId;
     protected $secret;
     protected $token;
 
     public function __construct()
     {
-        $this->baseUrl = env('QISCUS_BASE_URL');
-        $this->client = new Client(['base_uri' => env('QISCUS_BASE_URL')]);
         $this->appId = env('QISCUS_APP_ID');
         $this->secret = env('QISCUS_SECRET');
 
@@ -144,7 +138,6 @@ class QiscusService
         try {
             $headers = [
                 'Authorization' => "{$this->token}",
-                'Qiscus-App-Id' => "{$this->appId}",
                 // 'Content-Type'  => "application/json"
             ];
 
@@ -176,7 +169,6 @@ class QiscusService
         try {
             $headers = [
                 'Authorization' => "{$this->token}",
-                'Qiscus-App-Id' => "{$this->appId}",
                 'Content-Type'  => "application/json"
             ];
 
