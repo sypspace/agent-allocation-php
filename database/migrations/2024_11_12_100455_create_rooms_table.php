@@ -21,9 +21,9 @@ return new class extends Migration
             $table->string('avatar_url')->nullable();
             $table->boolean('is_new_session')->default(true);
             $table->boolean('is_resolved')->default(false);
-            $table->string('latest_service')->nullable();
+            $table->json('latest_service')->nullable();
             $table->string('extras')->nullable();
-            $table->string('candidate_agent')->nullable();
+            $table->json('candidate_agent')->nullable();
             $table->timestamps();
         });
     }
