@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Http::macro('qiscus', function () {
+            return Http::withHeaders([
+                'Qiscus-App-Id' => env('QISCUS_APP_ID')
+            ])->baseUrl(env('QISCUS_BASE_URL', 'https://multichannel.qiscus.com'));
+        });
     }
 }

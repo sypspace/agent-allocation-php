@@ -70,7 +70,7 @@ class QiscusAuthService
     public function authenticate(string $username, string $password): ?array
     {
         try {
-            $response = Http::asForm()->post("{$this->baseUrl}/api/v1/auth", [
+            $response = Http::qiscus()->asForm()->post("{$this->baseUrl}/api/v1/auth", [
                 'email' => $username,
                 'password' => $password,
             ]);
@@ -94,8 +94,7 @@ class QiscusAuthService
         try {
             $response = Http::withHeaders([
                 'Authorization' => "{$token}",
-                'Content-Type' => 'application/x-www-form-urlencoded',
-                'Qiscus-App-Id' => "{$this->appId}"
+                'Content-Type' => 'application/x-www-form-urlencoded'
             ])
                 ->get("{$this->baseUrl}/api/v1/admin/get_profile");
 
