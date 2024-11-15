@@ -90,11 +90,13 @@ class QiscusService
                 $channels = $response['data'];
 
                 $formated = [];
-                foreach ($channels as $key => $channel) {
-                    $formated[] = [
-                        'source' => str_replace('_channels', '', $key),
-                        'channel_id' => $channel
-                    ];
+                foreach ($channels as $source => $items) {
+                    foreach ($items as $key => $channel) {
+                        $formated[] = [
+                            'source' => str_replace('_channels', '', $source),
+                            'channel_id' => $channel['id']
+                        ];
+                    }
                 }
 
                 return collect($formated);
@@ -124,7 +126,8 @@ class QiscusService
 
             $response = Http::qiscus()
                 ->withHeaders($headers)
-                ->get("/api/v2/customer_rooms", $body);
+                ->withBody(json_encode($body))
+                ->get("/api/v2/customer_rooms");
 
             if ($response->successful()) {
                 $response = $response->json();
