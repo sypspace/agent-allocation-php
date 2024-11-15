@@ -30,7 +30,7 @@ class AssignAgent implements ShouldQueue
      */
     public function __construct()
     {
-        $this->qiscus = new QiscusService();
+        // 
     }
 
     /**
@@ -38,6 +38,8 @@ class AssignAgent implements ShouldQueue
      */
     public function handle(): void
     {
+        $this->qiscus = new QiscusService();
+
         $status = "unserved";
         $rooms = $this->qiscus->getCustomerRooms($status);
 
