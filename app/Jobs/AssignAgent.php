@@ -80,7 +80,7 @@ class AssignAgent implements ShouldQueue
                     Log::warning(
                         "AssignAgent Job: Skiped! Unable to found free agent.",
                         [
-                            'params' => ['id' => $room->room_id]
+                            'params' => ['id' => $room['room_id']]
                         ]
                     );
                 }
@@ -88,9 +88,9 @@ class AssignAgent implements ShouldQueue
         } else {
             // Skip. Room sudah di-handle seorang agent
             Log::warning(
-                "AssignAgent Job: Skiped! Room " . $room->room_id . " has been served.",
+                "AssignAgent Job: Skiped! Room " . $room['room_id'] . " has been served.",
                 [
-                    'params' => ['room_id' => $room->room_id]
+                    'params' => ['room_id' => $room['room_id']]
                 ]
             );
         }
