@@ -83,13 +83,13 @@ class QiscusService
         }
     }
 
-    public function getCustomerRooms()
+    public function getCustomerRooms($status = "unserved")
     {
         $channels = $this->getChannels();
 
         $body = [
             'channels' => $channels->toArray(),
-            "serve_status" => "unserved"
+            "serve_status" => $status
         ];
 
         try {
@@ -103,8 +103,14 @@ class QiscusService
             ]);
 
             $response = json_decode($response->getBody()->getContents(), true);
+            $rooms = collect($response['data']['customer_rooms']);
 
-            return collect($response['data']['customer_rooms']);
+            // Status "unserved" tidak menjamin data yg didapat error free.
+            // Ditemukan data dengan status "is_resolved = true" dan "is_waiting = false" di respons API diatas.
+            // Jadi, kita perlu buang data yang tidak valid
+            $rooms = $rooms->where('is_resolved', false)->where('is_waiting', true);
+
+            return $rooms->all();
         } catch (ClientException $e) {
             Log::error('getChannels Error: ' . $e->getMessage(), ['params' => $body]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
