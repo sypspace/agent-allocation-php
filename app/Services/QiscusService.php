@@ -110,7 +110,7 @@ class QiscusService
             // Jadi, kita perlu buang data yang tidak valid
             $rooms = $rooms->where('is_resolved', false)->where('is_waiting', true);
 
-            return $rooms->all();
+            return $rooms;
         } catch (ClientException $e) {
             Log::error('getChannels Error: ' . $e->getMessage(), ['params' => $body]);
             return ResponseHandler::error($e->getMessage(), $e->getCode());
