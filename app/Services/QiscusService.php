@@ -251,4 +251,33 @@ class QiscusService
             return ResponseHandler::error($e->getMessage(), $e->getCode());
         }
     }
+
+    public function allocateAgent($source, $channel_id, $ignore_availability = false)
+    {
+        try {
+            $headers = [
+                'Qiscus-Secret-Key' => "{$this->secret}"
+            ];
+
+            $form_params = [
+                'source' => $source,
+                'channel_id' => $channel_id,
+                'ignore_availability' => ($ignore_availability) ? 'true' : 'false'
+            ];
+
+            $response = Http::qiscus()
+                ->withHeaders($headers)
+                ->asForm()
+                ->post("/api/v1/admin/service/allocate_agent", $form_params);
+
+            if ($response->successful()) {
+                return $response->json('agent');
+            }
+
+            return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
+        } catch (RequestException $e) {
+            Log::error('getAvailableAgents Error: ' . $e->getCode() . ': ' . $e->getMessage(), ['params' => $form_params]);
+            return ResponseHandler::error($e->getMessage(), $e->getCode());
+        }
+    }
 }
