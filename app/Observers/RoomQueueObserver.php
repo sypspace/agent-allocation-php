@@ -26,7 +26,7 @@ class RoomQueueObserver
 
         if ($nextRoom) {
             AssignAgent::dispatch($nextRoom->room_id);
-            Log::notice("AssignAgent dispatched for room: {$nextRoom->room_id}");
+            Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
         } else {
             Log::notice("There are no rooms left to serve.");
         }

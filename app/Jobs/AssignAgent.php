@@ -69,7 +69,7 @@ class AssignAgent implements ShouldQueue
                         }
                     }
                 } else {
-                    Log::warning("No available agents found. Retrying...");
+                    Log::notice("No available agents found. Retrying...");
                     $this->release(60);
                 }
             } else {
