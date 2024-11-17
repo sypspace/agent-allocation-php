@@ -31,6 +31,9 @@ class WebhookController extends Controller
             RoomQueue::create(['room_id' => $request->room_id]);
 
             Log::notice("New message, room: {$request->room_id} added to queue");
+
+            AssignAgent::dispatch($request->room_id);
+
             return ResponseHandler::success("Room {$request->room_id} added to queue.");
         }
 
@@ -53,9 +56,17 @@ class WebhookController extends Controller
         $room_id = $request->service['room_id'];
         $agent_id = $request->resolved_by['id'];
 
-        RoomQueue::where('room_id', $room_id)->update(['agent_id' => $agent_id, 'status' => 'resolved']);
+        $room = RoomQueue::where('room_id', $room_id)->update(['agent_id' => $agent_id, 'status' => 'resolved']);
 
-        Log::notice("New notif, room {$request->room_id} has been resolved");
+        $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
+
+        if ($nextRoom) {
+            AssignAgent::dispatch($room->room_id);
+            Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
+        } else {
+            Log::notice("There are no rooms left to serve.");
+        }
+
         return ResponseHandler::success("Room {$room_id} marked as resolved");
     }
 }

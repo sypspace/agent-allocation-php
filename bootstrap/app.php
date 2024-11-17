@@ -33,5 +33,5 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withSchedule(function (Schedule $schedule) {
-        $schedule->job(new FallbackRoomAssignment)->everyFiveMinutes();
+        $schedule->job(new FallbackRoomAssignment)->withoutOverlapping()->everyFiveMinutes();
     })->create();

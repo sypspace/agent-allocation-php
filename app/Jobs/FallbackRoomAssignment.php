@@ -6,6 +6,7 @@ use App\Models\RoomQueue;
 use App\Services\QiscusService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Log;
 
 class FallbackRoomAssignment implements ShouldQueue
 {
@@ -27,12 +28,12 @@ class FallbackRoomAssignment implements ShouldQueue
     {
         // Pantau daftar room yang belum dilayani
         $status = "unserved";
-        $rooms = $qiscus->getCustomerRooms($status);
+        $custRooms = $qiscus->getCustomerRooms($status);
 
         // Queue Rule FIFO: 
         // Karena list customer rooms urutannya "descending" (tidak bisa diubah: filter tidak berfungsi). 
         // So, sort ascending
-        $sourceRooms = $rooms = $rooms->sortBy(['last_customer_timestamp', 'asc'])->pluck('room_id');
+        $sourceRooms = $custRooms->sortByDesc('last_customer_timestamp')->pluck('room_id');
 
         // Cek room sudah masuk antrian atau belum
         $queueRooms = RoomQueue::whereIn('room_id', $sourceRooms)->pluck('room_id');
@@ -43,5 +44,8 @@ class FallbackRoomAssignment implements ShouldQueue
         $nonExistRooms->each(function ($room) {
             RoomQueue::create(['room_id' => $room]);
         });
+
+        if ($nonExistRooms)
+            Log::info("Fallback jobs adds " . count($nonExistRooms) . " room(s) to the queue");
     }
 }

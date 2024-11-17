@@ -13,8 +13,7 @@ class RoomQueueObserver
      */
     public function created(RoomQueue $roomQueue): void
     {
-        AssignAgent::dispatch($roomQueue->room_id);
-        Log::notice("AssignAgent dispatched for room: {$roomQueue->room_id}");
+        Log::notice("New message, room: {$roomQueue->room_id} added to queue");
     }
 
     /**
@@ -22,14 +21,7 @@ class RoomQueueObserver
      */
     public function updated(RoomQueue $roomQueue): void
     {
-        $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
-
-        if ($nextRoom) {
-            AssignAgent::dispatch($nextRoom->room_id);
-            Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
-        } else {
-            Log::notice("There are no rooms left to serve.");
-        }
+        Log::notice("New notif, room {$roomQueue->room_id} has been resolved");
     }
 
     /**

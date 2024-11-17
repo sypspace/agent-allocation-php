@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\RoomQueue;
 use App\Services\QiscusService;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
@@ -41,6 +42,8 @@ class AssignAgent implements ShouldQueue
     public function handle(QiscusService $qiscus): void
     {
         try {
+            Log::info("Running new AssignAgent job instance", ['room_id' => $this->room_id]);
+
             // Ambil detail room dari API server
             $room = $qiscus->getRoomById($this->room_id);
             $room = $room['customer_room'];
@@ -64,13 +67,13 @@ class AssignAgent implements ShouldQueue
                                 Log::info("Successfully assigned agent {$agent['name']} to room {$this->room_id}.");
                             } else {
                                 Log::warning("Failed to assign agent to room {$this->room_id}. Retrying...");
-                                $this->release(30);
+                                $this->release();
                             }
                         }
                     }
                 } else {
                     Log::notice("No available agents found. Retrying...");
-                    $this->release(60);
+                    $this->release(5);
                 }
             } else {
                 Log::info("Room {$this->room_id} is already served or resolved.");
@@ -78,7 +81,7 @@ class AssignAgent implements ShouldQueue
             }
         } catch (\Exception $e) {
             Log::error("Error in AssignAgent Job: " . $e->getMessage());
-            $this->release(60);
+            $this->release(5);
         }
     }
 }
