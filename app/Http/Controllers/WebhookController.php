@@ -61,7 +61,7 @@ class WebhookController extends Controller
             $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
 
             if ($nextRoom) {
-                AssignAgent::dispatch($room->room_id)->withoutDelay()->afterCommit();
+                AssignAgent::dispatch($nextRoom->room_id)->withoutDelay()->afterCommit();
                 Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
             } else {
                 Log::notice("There are no rooms left to serve.");
