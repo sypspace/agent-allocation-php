@@ -57,15 +57,15 @@ class AssignAgent implements ShouldQueue
                             Log::info("Successfully assigned agent {$agent['name']} to room {$this->room_id}.");
                         } else {
                             Log::warning("Failed to assign agent to room {$this->room_id}. Retrying...");
-                            $this->release();
+                            $this->release(5);
                         }
                     } else {
                         Log::notice("No available agents found. Retrying...");
-                        $this->release();
+                        $this->release(5);
                     }
                 } else {
                     Log::notice("There are no agents online. Retrying...");
-                    $this->release();
+                    $this->release(5);
                 }
             } else {
                 Log::info("Room {$this->room_id} is already served or resolved.");
