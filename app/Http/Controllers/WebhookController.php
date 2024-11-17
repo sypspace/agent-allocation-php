@@ -30,7 +30,7 @@ class WebhookController extends Controller
         if (!RoomQueue::where('room_id', $request->room_id)->exists()) {
             RoomQueue::create(['room_id' => $request->room_id]);
 
-            AssignAgent::dispatch($request->room_id);
+            // AssignAgent::dispatchSync($request->room_id)->afterCommit();
 
             return ResponseHandler::success("Room {$request->room_id} added to queue.");
         }
@@ -56,14 +56,14 @@ class WebhookController extends Controller
 
         $room = RoomQueue::where('room_id', $room_id)->update(['agent_id' => $agent_id, 'status' => 'resolved']);
 
-        $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
+        // $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
 
-        if ($nextRoom) {
-            AssignAgent::dispatch($room->room_id);
-            Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
-        } else {
-            Log::notice("There are no rooms left to serve.");
-        }
+        // if ($nextRoom) {
+        //     AssignAgent::dispatchSync($room->room_id)->afterCommit();
+        //     Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
+        // } else {
+        //     Log::notice("There are no rooms left to serve.");
+        // }
 
         return ResponseHandler::success("Room {$room_id} marked as resolved");
     }
