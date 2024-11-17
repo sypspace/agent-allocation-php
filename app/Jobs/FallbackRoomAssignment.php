@@ -6,6 +6,7 @@ use App\Models\RoomQueue;
 use App\Services\QiscusService;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
 
 class FallbackRoomAssignment implements ShouldQueue
@@ -18,7 +19,7 @@ class FallbackRoomAssignment implements ShouldQueue
      */
     public function __construct()
     {
-        //
+        Log::notice("Fallback RoomAssignment job started");
     }
 
     /**
@@ -45,7 +46,9 @@ class FallbackRoomAssignment implements ShouldQueue
             RoomQueue::create(['room_id' => $room]);
         });
 
-        if ($nonExistRooms)
+        if (count($nonExistRooms) > 0)
             Log::info("Fallback jobs adds " . count($nonExistRooms) . " room(s) to the queue");
+        else
+            Log::debug("Data:", compact('custRooms', 'sourceRooms', 'queueRooms', 'nonExistRooms'));
     }
 }
