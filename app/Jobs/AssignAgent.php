@@ -4,16 +4,14 @@ namespace App\Jobs;
 
 use App\Models\RoomQueue;
 use App\Services\QiscusService;
-use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
 class AssignAgent implements ShouldQueue
 {
-    use InteractsWithQueue, Queueable, SerializesModels;
+    use InteractsWithQueue, Queueable;
 
     /**
      * The number of times the job may be attempted.
@@ -62,18 +60,22 @@ class AssignAgent implements ShouldQueue
                             // Call API untuk assign agent ke room
                             $assignedAgent = $qiscus->assignAgent($room['room_id'], $agent['id']);
 
+                            Log::debug("Available agents:", ['agents' => $assignedAgent, 'is' => !empty($availableAgents)]);
                             if ($assignedAgent) {
                                 RoomQueue::where('room_id', $this->room_id)->update(['status' => 'served']);
                                 Log::info("Successfully assigned agent {$agent['name']} to room {$this->room_id}.");
                             } else {
                                 Log::warning("Failed to assign agent to room {$this->room_id}. Retrying...");
-                                $this->release();
+                                // $this->release();
                             }
+                        } else {
+                            Log::notice("No available agents found. Retrying...");
+                            $this->release();
                         }
                     }
                 } else {
-                    Log::notice("No available agents found. Retrying...");
-                    $this->release(5);
+                    Log::notice("There are no agents online. Retrying...");
+                    $this->release();
                 }
             } else {
                 Log::info("Room {$this->room_id} is already served or resolved.");
@@ -81,7 +83,7 @@ class AssignAgent implements ShouldQueue
             }
         } catch (\Exception $e) {
             Log::error("Error in AssignAgent Job: " . $e->getMessage());
-            $this->release(5);
+            $this->release();
         }
     }
 }

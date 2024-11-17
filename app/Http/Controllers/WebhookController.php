@@ -30,8 +30,6 @@ class WebhookController extends Controller
         if (!RoomQueue::where('room_id', $request->room_id)->exists()) {
             RoomQueue::create(['room_id' => $request->room_id]);
 
-            Log::notice("New message, room: {$request->room_id} added to queue");
-
             AssignAgent::dispatch($request->room_id);
 
             return ResponseHandler::success("Room {$request->room_id} added to queue.");
