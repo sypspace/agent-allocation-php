@@ -5,12 +5,13 @@ namespace App\Jobs;
 use App\Models\RoomQueue;
 use App\Services\QiscusService;
 use Exception;
+use Illuminate\Contracts\Queue\ShouldBeUniqueUntilProcessing;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
 
-class AssignAgent implements ShouldQueue
+class AssignAgent implements ShouldQueue, ShouldBeUniqueUntilProcessing
 {
     use Queueable;
 
@@ -75,6 +76,14 @@ class AssignAgent implements ShouldQueue
             Log::error("Error in AssignAgent Job: " . $e->getMessage());
             $this->fail("Error in AssignAgent Job: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Get the unique ID for the job.
+     */
+    public function uniqueId(): string
+    {
+        return $this->room_id;
     }
 
     /**

@@ -16,7 +16,7 @@ class RoomQueueObserver implements ShouldHandleEventsAfterCommit
     {
         Log::notice("New message, room: {$roomQueue->room_id} added to queue");
 
-        AssignAgent::dispatch($roomQueue->room_id);
+        AssignAgent::dispatch($roomQueue->room_id)->withoutDelay()->afterCommit();
     }
 
     /**
@@ -29,7 +29,7 @@ class RoomQueueObserver implements ShouldHandleEventsAfterCommit
         $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
 
         if ($nextRoom) {
-            AssignAgent::dispatch($roomQueue->room_id);
+            AssignAgent::dispatch($roomQueue->room_id)->withoutDelay()->afterCommit();
             Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
         } else {
             Log::notice("There are no rooms left to serve.");
