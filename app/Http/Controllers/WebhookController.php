@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Jobs\AssignAgent;
 use App\Models\ResolveNotif;
 use App\Models\Room;
+use App\Models\RoomQueue;
 use App\Services\QiscusService;
 use App\Services\ResponseHandler;
 use Illuminate\Http\Request;
@@ -22,13 +23,17 @@ class WebhookController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::info('agentAllocation errors: ' . $validator->errors()->first());
+            Log::warning('Validation failed: ' . $validator->errors()->first());
             return ResponseHandler::error($validator->errors()->first());
         }
 
-        AssignAgent::dispatch();
+        if (!RoomQueue::where('room_id', $request->room_id)->exists()) {
+            RoomQueue::create(['room_id' => $request->room_id]);
 
-        return ResponseHandler::success('Successfully received.');
+            return ResponseHandler::success("Room {$request->room_id} added to queue.");
+        }
+
+        return ResponseHandler::success("Room {$request->room_id} is already in queue.");
     }
 
     public function markAsResolved(Request $request)
@@ -40,12 +45,15 @@ class WebhookController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::info('agentAllocation errors: ' . $validator->errors()->first());
+            Log::warning('Validation failed: ' . $validator->errors()->first());
             return ResponseHandler::error($validator->errors()->first());
         }
 
-        AssignAgent::dispatch();
+        $room_id = $request->service['room_id'];
+        $agent_id = $request->resolved_by['id'];
 
-        return ResponseHandler::success('Room marked as resolved');
+        RoomQueue::where('room_id', $room_id)->update(['agent_id' => $agent_id, 'status' => 'resolved']);
+
+        return ResponseHandler::success("Room {$room_id} marked as resolved");
     }
 }

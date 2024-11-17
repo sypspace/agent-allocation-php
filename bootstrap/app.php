@@ -1,6 +1,8 @@
 <?php
 
+use App\Jobs\FallbackRoomAssignment;
 use App\Services\ResponseHandler;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -29,4 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return ResponseHandler::error('The GET method is not supported for this route.', 405);
             }
         });
+    })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->job(new FallbackRoomAssignment)->everyFiveMinutes();
     })->create();

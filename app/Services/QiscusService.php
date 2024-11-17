@@ -114,14 +114,18 @@ class QiscusService
                 ->get("/api/v2/customer_rooms");
 
             if ($response->successful()) {
-                $response = $response->json();
+                $response = $response->json('data');
 
-                $rooms = collect($response['data']['customer_rooms']);
+                $rooms = collect($response['customer_rooms']);
 
                 // Status "unserved" tidak menjamin data yg didapat error free.
                 // Ditemukan data dengan status "is_resolved = true" dan "is_waiting = false" di respons API diatas.
-                // Jadi, kita perlu buang data yang tidak valid
-                $rooms = $rooms->where('is_resolved', false)->where('is_waiting', true);
+                // Jadi, kita perlu filter data yang tidak valid
+                if ($status == 'unserved') {
+                    $rooms = $rooms->where('is_resolved', false)->where('is_waiting', true);
+                } elseif ($status == 'served') {
+                    $rooms = $rooms->where('is_waiting', false);
+                }
 
                 return $rooms;
             }
@@ -154,7 +158,7 @@ class QiscusService
                 ->get("/api/v1/admin/agents/get_by_ids");
 
             if ($response->successful()) {
-                return $response->json();
+                return $response->json('data');
             }
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
@@ -177,7 +181,7 @@ class QiscusService
                 ->get("/api/v2/customer_rooms/" . $id);
 
             if ($response->successful()) {
-                return $response->json();
+                return $response->json('data');
             }
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));
@@ -238,7 +242,7 @@ class QiscusService
                 ->get("/api/v2/admin/service/available_agents");
 
             if ($response->successful()) {
-                return $response->json();
+                return $response->json('data');
             }
 
             return ResponseHandler::error('Failed to fetch data from the API', $response->status(), $response->json('errors'));

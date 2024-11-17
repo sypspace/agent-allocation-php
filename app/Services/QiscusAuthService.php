@@ -81,7 +81,7 @@ class QiscusAuthService
 
             return null;
         } catch (\Exception $e) {
-            Log::error('QiqusAuthService Error: ' . $e->getMessage());
+            Log::error('Authentication failed: ' . $e->getMessage());
             return null;
         }
     }

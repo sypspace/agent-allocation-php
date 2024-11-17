@@ -29,7 +29,7 @@ class SettingController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::info('updateMaxCustomers errors: ' . $validator->errors()->first());
+            Log::warning('Validation failed: ' . $validator->errors()->first());
             return ResponseHandler::error($validator->errors()->first());
         }
 
@@ -50,6 +50,11 @@ class SettingController extends Controller
             'endpoint' => 'required',
             'enable' => 'nullable|boolean',
         ]);
+
+        if ($validator->fails()) {
+            Log::warning('Validation failed: ' . $validator->errors()->first());
+            return ResponseHandler::error($validator->errors()->first());
+        }
 
         $qiscus = new QiscusService();
         $response = $qiscus->setMarkAsResolvedWebhook($request->endpoint, ($request->enable) ?? false);
