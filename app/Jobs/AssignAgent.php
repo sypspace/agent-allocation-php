@@ -7,6 +7,7 @@ use App\Services\QiscusService;
 use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Support\Facades\Log;
 
 class AssignAgent implements ShouldQueue
@@ -74,5 +75,15 @@ class AssignAgent implements ShouldQueue
             Log::error("Error in AssignAgent Job: " . $e->getMessage());
             $this->fail("Error in AssignAgent Job: " . $e->getMessage());
         }
+    }
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [(new WithoutOverlapping($this->room_id))->dontRelease()->expireAfter(180)];
     }
 }
