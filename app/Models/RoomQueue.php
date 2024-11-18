@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Observers\RoomQueueObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Model;
 
+#[ObservedBy([RoomQueueObserver::class])]
 class RoomQueue extends Model
 {
     protected $fillable = [

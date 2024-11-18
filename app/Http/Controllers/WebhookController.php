@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\AssignAgent;
+use App\Jobs\FallbackRoomAssignment;
 use App\Models\ResolveNotif;
 use App\Models\Room;
 use App\Models\RoomQueue;
@@ -30,6 +31,8 @@ class WebhookController extends Controller
         if (!RoomQueue::where('room_id', $request->room_id)->exists()) {
             RoomQueue::create(['room_id' => $request->room_id]);
 
+
+            FallbackRoomAssignment::dispatch()->withoutDelay()->afterCommit();
             // AssignAgent::dispatch($request->room_id)->withoutDelay()->afterCommit();
 
             return ResponseHandler::success("Room {$request->room_id} added to queue.");
@@ -60,16 +63,19 @@ class WebhookController extends Controller
         if (!$room) {
             RoomQueue::withoutEvents(function () use ($room_id) {
                 $oldRoom = RoomQueue::create(['room_id' => $room_id, 'status' => 'resolved']);
-                $nextRoom = $oldRoom->next;
 
-                if ($nextRoom) {
-                    AssignAgent::dispatch($nextRoom->room_id)->withoutDelay()->afterCommit();
-                    Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
-                } else {
-                    Log::notice("There are no rooms left to serve.");
-                }
+                // $nextRoom = $oldRoom->next;
+
+                // if ($nextRoom) {
+                //     AssignAgent::dispatch($nextRoom->room_id)->withoutDelay()->afterCommit();
+                //     Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
+                // } else {
+                //     Log::notice("There are no rooms left to serve.");
+                // }
             });
         }
+
+        FallbackRoomAssignment::dispatch()->withoutDelay()->afterCommit();
 
         return ResponseHandler::success("Room {$room_id} marked as resolved");
     }
