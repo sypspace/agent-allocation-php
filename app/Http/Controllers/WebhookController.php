@@ -58,14 +58,17 @@ class WebhookController extends Controller
 
         // Handle resolved notifications for rooms served before Agent Allocation is running.
         if (!$room) {
-            $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
+            RoomQueue::withoutEvents(function () use ($room_id) {
+                $oldRoom = RoomQueue::create(['room_id' => $room_id, 'status' => 'resolved']);
+                $nextRoom = $oldRoom->next;
 
-            if ($nextRoom) {
-                AssignAgent::dispatch($nextRoom->room_id)->withoutDelay()->afterCommit();
-                Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
-            } else {
-                Log::notice("There are no rooms left to serve.");
-            }
+                if ($nextRoom) {
+                    AssignAgent::dispatch($nextRoom->room_id)->withoutDelay()->afterCommit();
+                    Log::notice("AssignAgent dispatched for next room: {$nextRoom->room_id}");
+                } else {
+                    Log::notice("There are no rooms left to serve.");
+                }
+            });
         }
 
         return ResponseHandler::success("Room {$room_id} marked as resolved");

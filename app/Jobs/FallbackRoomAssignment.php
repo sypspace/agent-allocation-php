@@ -13,6 +13,7 @@ class FallbackRoomAssignment implements ShouldQueue
 {
     use Queueable;
 
+    protected $id;
     /**
      * Ada kemungkinan server Qiscus gagal kirim data melalui webhook. 
      * Kita bikin job buat cek daftar room yg belum masuk antrian.
@@ -20,6 +21,7 @@ class FallbackRoomAssignment implements ShouldQueue
     public function __construct()
     {
         Log::notice("Fallback RoomAssignment job started");
+        $this->id = strtotime(date('Y-m-d H:') . ceil(date('i') / 5) * 5);
     }
 
     /**
@@ -30,6 +32,9 @@ class FallbackRoomAssignment implements ShouldQueue
         // Pantau daftar room yang belum dilayani
         $status = "unserved";
         $custRooms = $qiscus->getCustomerRooms($status);
+
+        if (config('app.debug'))
+            Log::debug("Customer Rooms:", $custRooms);
 
         // Queue Rule FIFO: 
         // Karena list customer rooms urutannya "descending" (tidak bisa diubah: filter tidak berfungsi). 
@@ -57,7 +62,28 @@ class FallbackRoomAssignment implements ShouldQueue
 
         if (count($unservedRooms) > 0)
             Log::info("Fallback jobs adds " . count($unservedRooms) . " room(s) to the queue");
-        else
+
+
+        if (config('app.debug'))
             Log::debug("Data:", compact('custRooms', 'sourceRooms', 'queueRooms', 'unservedRooms'));
+    }
+
+
+    /**
+     * Get the unique ID for the job.
+     */
+    public function uniqueId(): string
+    {
+        return $this->id;
+    }
+
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array<int, object>
+     */
+    public function middleware(): array
+    {
+        return [(new WithoutOverlapping($this->id))->dontRelease()->expireAfter(300)];
     }
 }
