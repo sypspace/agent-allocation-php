@@ -37,18 +37,27 @@ class FallbackRoomAssignment implements ShouldQueue
         $sourceRooms = $custRooms->sortByDesc('last_customer_timestamp')->pluck('room_id');
 
         // Cek room sudah masuk antrian atau belum
-        $queueRooms = RoomQueue::whereIn('room_id', $sourceRooms)->pluck('room_id');
+        $queueRooms = RoomQueue::where('status', $status)->orderBy('created_at', 'asc')->pluck('room_id');
 
-        $nonExistRooms = $sourceRooms->diff($queueRooms)->values();
+        $unservedRooms = $sourceRooms->merge($queueRooms)->unique()->values();
 
         // Masukkan room ke daftar antrian dan jalankan job assignment
-        $nonExistRooms->each(function ($room) {
-            RoomQueue::create(['room_id' => $room]);
+        $unservedRooms->each(function ($room) {
+            RoomQueue::withoutEvents(function () use ($room) {
+                $newRoom = RoomQueue::firstOrCreate(['room_id' => $room]);
+
+                if ($newRoom) {
+                    AssignAgent::dispatch($newRoom->room_id)->withoutDelay()->afterCommit();
+                    Log::notice("AssignAgent dispatched for new room: {$newRoom->room_id}");
+                } else {
+                    Log::warning("Failed to add room: {$newRoom->room_id} to the queue.");
+                }
+            });
         });
 
-        if (count($nonExistRooms) > 0)
-            Log::info("Fallback jobs adds " . count($nonExistRooms) . " room(s) to the queue");
+        if (count($unservedRooms) > 0)
+            Log::info("Fallback jobs adds " . count($unservedRooms) . " room(s) to the queue");
         else
-            Log::debug("Data:", compact('custRooms', 'sourceRooms', 'queueRooms', 'nonExistRooms'));
+            Log::debug("Data:", compact('custRooms', 'sourceRooms', 'queueRooms', 'unservedRooms'));
     }
 }

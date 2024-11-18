@@ -26,7 +26,7 @@ class RoomQueueObserver implements ShouldHandleEventsAfterCommit
     {
         Log::notice("New notif, room {$roomQueue->room_id} has been resolved");
 
-        $nextRoom = RoomQueue::where('status', 'queued')->orderBy('created_at', 'asc')->first();
+        $nextRoom = $roomQueue->next;
 
         if ($nextRoom) {
             AssignAgent::dispatch($nextRoom->room_id)->withoutDelay()->afterCommit();
