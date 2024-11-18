@@ -34,7 +34,7 @@ class FallbackRoomAssignment implements ShouldQueue
         $custRooms = $qiscus->getCustomerRooms($status);
 
         if (config('app.debug'))
-            Log::debug("Customer Rooms:", $custRooms);
+            Log::debug("Customer Rooms:", compact('custRooms'));
 
         // Queue Rule FIFO: 
         // Karena list customer rooms urutannya "descending" (tidak bisa diubah: filter tidak berfungsi). 

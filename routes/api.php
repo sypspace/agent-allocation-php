@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\WebhookController;
+use App\Jobs\FallbackRoomAssignment;
+use App\Services\ResponseHandler;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -14,4 +16,9 @@ Route::prefix('/v1')->group(function () {
     Route::get('settings/max_customers', [SettingController::class, 'getMaxCustomers'])->name('settings.maxCustomers.get');
     Route::post('settings/max_customers', [SettingController::class, 'updateMaxCustomers'])->name('settings.maxCustomers.update');
     Route::post('settings/set_mark_as_resolved', [SettingController::class, 'setMarkAsResolved'])->name('settings.setMarkAsResolved.update');
+
+    Route::post('settings/reassgin', function () {
+        FallbackRoomAssignment::dispatchAfterResponse();
+        return ResponseHandler::success('Re-assigned');
+    });
 });
