@@ -44,6 +44,7 @@ class AssignAgent implements ShouldQueue, ShouldBeUniqueUntilProcessing
             if ($room['is_waiting'] && !$room['is_resolved']) {
                 // Cari agen yang free dari API server
                 $agent = $qiscus->allocateAgent($room['source'], $room['channel_id']);
+                $agent = $agent['agent'];
 
                 if ($agent) {
                     // Pilih agent yang free & jumlah customer yg sedang dilayani < QISCUS_MAX_CUSTOMER
