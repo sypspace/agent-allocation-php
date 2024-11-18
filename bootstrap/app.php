@@ -31,7 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return ResponseHandler::error('The GET method is not supported for this route.', 405);
             }
         });
-    })
-    ->withSchedule(function (Schedule $schedule) {
-        $schedule->job(new FallbackRoomAssignment)->withoutOverlapping()->everyFiveMinutes();
+        // })
+        // ->withSchedule(function (Schedule $schedule) {
+        //     $schedule->job(new FallbackRoomAssignment, 'fallback', 'database')->withoutOverlapping()->everyFiveMinutes();
     })->create();
